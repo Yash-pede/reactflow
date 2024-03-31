@@ -278,7 +278,7 @@ export const CredentialsForm = () => {
               className="w-full"
               type="submit"
             >
-              Sign in
+              Create Configuration
             </Button>
           </CardFooter>
         </Card>
