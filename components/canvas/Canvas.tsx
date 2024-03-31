@@ -18,17 +18,20 @@ import {
   ProcessedNodes,
 } from "./node";
 import NodeCard from "./node/NodeCard";
+import axios from "axios";
+import { useTheme } from "next-themes";
 
 const nodeTypes = {
   selectorNode: NodeCard,
 };
 function Flow() {
+  const { theme } = useTheme();
   const [nodes, setNodes, onNodesChange] = useNodesState(LoadinglNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(LoadingEdges);
 
   const { data, error } = useQuery({
     queryKey: ["graph"],
-    queryFn: () => fetch("/api/graph").then((res) => res.json()),
+    queryFn: () => axios.get("/api/graph").then((res) => res.data),
   });
 
   useEffect(() => {
@@ -58,12 +61,20 @@ function Flow() {
         attributionPosition="bottom-left"
         defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
       >
-        <Background
-          id="1"
+        {theme === "light" ? (
+          <Background
+            id="light"
+            gap={20}
+            color="#f1f1f1"
+            variant={BackgroundVariant.Lines}
+          />
+        ) : (
+          <Background
+          id="dark"
           gap={20}
-          color="#f1f1f1"
-          variant={BackgroundVariant.Lines}
-        />
+          variant={BackgroundVariant.Dots}
+          />
+        )}
         <Controls />
         <MiniMap nodeBorderRadius={2} nodeStrokeWidth={3} />
       </ReactFlow>

@@ -18,3 +18,20 @@ type ChildrenNode = {
     nodes: GraphNode[];
   };
   
+  type Dependency = {
+    name: string;
+    version: string;
+    description: string;
+};
+type FlowWithDependencies = {
+  name: string;
+  dependencies: Dependency[];
+};
+
+type ConfigurationType = {
+  flow: string;
+  mock: boolean;
+  username: string;
+  password: string;
+  dependency: string;
+}

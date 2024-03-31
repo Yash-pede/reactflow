@@ -34,7 +34,7 @@ const NodeCard = ({
           <CardTitle className="flex w-full justify-between text-sm bg-accent text-start px-4 rounded-lg">
             <div className="flex items-center gap-2">
               <Table2 className="h-4 w-4" />
-              <span>{function_details?.split(".")[0]}</span>
+              <span>{function_details?.split(".")[0]}.py</span>
             </div>
             <ArrowUpRightFromSquare className="p-1" />
           </CardTitle>
