@@ -11,5 +11,5 @@ export const DbMockFormSchema = z.object({
   password: z.string().min(6, { message: "Password is required" }).max(50, {
     message: "Password must be less than 50 characters",
   }),
-  dependency: z.string().optional(),
+  dependency: z.array(z.string(), { required_error: "Dependency is required" }),
 });

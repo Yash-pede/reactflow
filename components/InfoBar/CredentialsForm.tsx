@@ -47,7 +47,7 @@ export const CredentialsForm = () => {
       flow: "carts",
       username: "",
       password: "",
-      dependency: "",
+      dependency: [],
     },
   });
 
@@ -71,20 +71,19 @@ export const CredentialsForm = () => {
       return axios.post("/api/configuration", data);
     },
     onSuccess: () => {
-      toast.success("Configuration Created", {
-      });
-      console.log(ConfigurationResponse);
-      form.reset();
+      toast.success("Configuration Created", {});
+      // console.log(ConfigurationResponse);
+      // form.reset();
     },
   });
 
   useEffect(() => {
     refetch();
-  }, [form.getValues("flow")]);
+  }, [form.getValues("flow"),refetch]);
 
   const onSubmit = (data: z.infer<typeof DbMockFormSchema>) => {
     toast.info("Creating Your Configuration");
-    toast.dismiss()
+    toast.dismiss();
     mutate(data);
     console.log(data);
   };
@@ -173,46 +172,73 @@ export const CredentialsForm = () => {
                     Dependencies
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    Select the once you want to mock
+                    Select the ones you want to mock
                   </p>
                 </div>
               </FormLabel>
-              <FormControl>
-                <>
-                  {isLoading &&
-                    Array.from({ length: 4 }).map((_, index) => (
-                      <Skeleton key={index} className="h-7 w-full my-4" />
-                    ))}
-
-                  <RadioGroup onValueChange={field.onChange} className="mt-4">
-                    {Dependencies?.dependencies.map(
-                      (dependency: Dependency, index) => (
-                        <Button
-                          asChild
-                          variant="outline"
-                          key={index}
-                          className="justify-start"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem
-                              value={dependency.name}
-                              id={dependency.name}
-                            />
-                            <Label htmlFor={dependency.name}>
-                              {dependency.name}
-                            </Label>
-                          </div>
-                        </Button>
-                      )
-                    )}
-                  </RadioGroup>
-                </>
-              </FormControl>
+              {Dependencies?.dependencies.map((item: Dependency, index) => (
+                <FormItem
+                  key={item.name}
+                  className="flex flex-row items-start space-x-3 space-y-0"
+                >
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value.includes(item.name)}
+                      onCheckedChange={(checked) => {
+                        const updatedValues = checked
+                          ? [...field.value, item.name]
+                          : field.value.filter((dep) => dep !== item.name);
+                        form.setValue("dependency", updatedValues);
+                      }}
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal">{item.name}</FormLabel>
+                </FormItem>
+              ))}
               <FormMessage />
             </FormItem>
           )}
         />
-
+        <FormField
+          control={form.control}
+          name="mock"
+          render={({ field }) => (
+            <FormItem className="space-x-3 space-y-4 rounded-md w-full p-4">
+              <div className="space-y-1 leading-none">
+                <FormLabel>Database</FormLabel>
+                <FormDescription>
+                  Select if you want to mock the database
+                </FormDescription>
+              </div>
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value === true}
+                    onCheckedChange={(checked) => {
+                      form.setValue("mock", true);
+                    }}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal">
+                  I want to mock the database
+                </FormLabel>
+              </FormItem>
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value === false}
+                    onCheckedChange={(checked) => {
+                      form.setValue("mock", false);
+                    }}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal">
+                 I don&apos;t want to mock the database
+                </FormLabel>
+              </FormItem>
+            </FormItem>
+          )}
+        />
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="text-2xl">Login</CardTitle>
@@ -250,24 +276,6 @@ export const CredentialsForm = () => {
                     This password is used to login.
                   </FormDescription>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="mock"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Yes, I want to mock the Database</FormLabel>
-                    <FormDescription></FormDescription>
-                  </div>
                 </FormItem>
               )}
             />
