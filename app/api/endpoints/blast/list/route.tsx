@@ -1,11 +1,11 @@
 const sampleResponse = [
     {
-      entryPoint: "PUT /asset/{asset_id}",
+      entryPoint: "PUT /{asset_id}",
       identifier: "/dir/asset_router.py:asset_put",
     },
     {
       entryPoint: "GET /user/{id}",
-      identifier: "/dir/user_router.py:user_get",
+      identifier: "/    dir/user_router.py:user_get",
     },
   ] 
 

@@ -57,6 +57,8 @@ export const ProcessedNodes = (nodes: MockGraphData): Node[] => {
   const offsetX = 500;
   const offsetY = 0;
 
+  const nodePositions: { [key: string]: { x: number; y: number } } = {};
+
   const setNode = (node: any, nodeType: string = "default", x = 0, y = 0) => {
     SelectedNodes.push({
       id: node.function,
@@ -71,7 +73,6 @@ export const ProcessedNodes = (nodes: MockGraphData): Node[] => {
         ),
       },
       type: nodeType || "default",
-
       style: {
         width: "auto",
         height: "auto",
@@ -81,6 +82,7 @@ export const ProcessedNodes = (nodes: MockGraphData): Node[] => {
       },
       position: { x, y },
     });
+    nodePositions[node.function] = { x, y };
   };
 
   const traverseNodes = (parentNode: any, parentX = 0, parentY = 0) => {
@@ -90,9 +92,9 @@ export const ProcessedNodes = (nodes: MockGraphData): Node[] => {
 
     if (parentNode.children && parentNode.children.length > 0) {
       const numChildren = parentNode.children.length;
-      const childOffsetY = viewportWidth / 5;
+      const childOffsetY = viewportWidth / 3;
       const childOffsetX = 500;
-      let childY = y - ((viewportWidth / 5) * (numChildren - 1)) / 2;
+      let childY = y - ((viewportWidth / 3) * (numChildren - 1)) / 2;
       let childX = x;
 
       parentNode.children.forEach((childNode: any) => {
@@ -105,8 +107,37 @@ export const ProcessedNodes = (nodes: MockGraphData): Node[] => {
   // Start traversing from the root node
   traverseNodes(nodes.nodes[0]);
 
+  // Adjust node positions to prevent overlap
+  Object.keys(nodePositions).forEach((nodeId) => {
+    const node = SelectedNodes.find((n) => n.id === nodeId);
+    if (node) {
+      const siblings = nodes.nodes.find((n) => n.function === nodeId)?.children || [];
+      const siblingIndex = siblings.findIndex((n) => n.function === nodeId);
+      const siblingCount = siblings.length;
+      const siblingOffsetY = viewportWidth / 3;
+      const siblingOffsetX = 500;
+      const siblingY = node.position.y;
+      const siblingX = node.position.x;
+
+      let yOffset = -((siblingCount - 1) * siblingOffsetY) / 2;
+      siblings.forEach((sibling) => {
+        if (sibling.function !== nodeId) {
+          const siblingNode = SelectedNodes.find((n) => n.id === sibling.function);
+          if (siblingNode) {
+            siblingNode.position = {
+              x: siblingX + siblingOffsetX,
+              y: siblingY + yOffset,
+            };
+            yOffset += siblingOffsetY;
+          }
+        }
+      });
+    }
+  });
+
   return SelectedNodes;
 };
+
 
 export const ProcessedEdges = (nodes: MockGraphData): Edge[] => {
   const edges: Edge[] = [];

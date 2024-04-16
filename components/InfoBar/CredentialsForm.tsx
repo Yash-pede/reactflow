@@ -7,27 +7,17 @@ import {
 } from "../ui/select";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import {
-  CircleArrowOutUpRight,
   MessageCircleWarning,
   SquareArrowOutUpRightIcon,
   Terminal,
 } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Label } from "../ui/label";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useEffect } from "react";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
 import { DbMockFormSchema } from "../../lib/Schema";
@@ -43,11 +33,14 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Separator } from "../ui/separator";
+import { useFilePath } from "@/contexts/FilePathContext";
 
 export const CredentialsForm = () => {
   const searchParams = useSearchParams();
+  const { setFilePath } = useFilePath();
+  const router = useRouter();
   const form = useForm<z.infer<typeof DbMockFormSchema>>({
     resolver: zodResolver(DbMockFormSchema),
     defaultValues: {
@@ -60,17 +53,19 @@ export const CredentialsForm = () => {
       port: "",
     },
   });
-
   const {
     data: Dependencies,
     refetch,
     isLoading,
   } = useQuery<FlowWithDependencies>({
-    queryKey: ["dependencies", form.getValues("flow")],
+    queryKey: ["dependencies", form.getValues("flow").split("/")[1]],
     queryFn: () =>
       axios
-        .get(`api/dependencies?flow=${form.getValues("flow")}`)
+        .get(
+          `api/dependencies?flow=${form.getValues("flow").split("/")[1].trim()}`
+        )
         .then((res) => res.data),
+    enabled: !!form.getValues("flow"),
   });
   const {
     mutate,
@@ -82,33 +77,38 @@ export const CredentialsForm = () => {
     },
     onSuccess: () => {
       toast.success("Configuration Created", {});
-      // console.log(ConfigurationResponse);
-      // form.reset();
     },
   });
-
   useEffect(() => {
-    refetch();
-  }, [form.getValues("flow"), refetch]);
+    const subscription = form.watch((value, { name, type }) => {
+      if (name === "flow") {
+        refetch();
+        // console.log(type);
+        setFilePath([value.flow ?? ""]);
+        router.push(
+          `?endpoint=${encodeURIComponent(value.flow ?? "")}`,
+          undefined
+        );
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   const onSubmit = (data: z.infer<typeof DbMockFormSchema>) => {
     toast.info("Creating Your Configuration");
     toast.dismiss();
     mutate(data);
-    console.log(data);
+    // console.log(data);
   };
-  console.log(searchParams.get("endpoint"));
   useEffect(() => {
-    if (searchParams.get("endpoint") != null) {
-      form.setValue(
-        "flow",
-        decodeURIComponent(searchParams.get("endpoint") || "") as string
-      );
+    const endpoint = decodeURIComponent(searchParams.get("endpoint") || "");
+    if (endpoint) {
+      form.setValue("flow", endpoint);
     } else {
       form.setValue("flow", "carts");
     }
   }, [form, searchParams]);
-  console.log(form.getValues("flow"));
+
   return (
     <Form {...form}>
       <form
@@ -155,22 +155,25 @@ export const CredentialsForm = () => {
                 <Select
                   disabled={isLoading}
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  defaultValue={decodeURIComponent(
+                    searchParams.get("endpoint") || ""
+                  )}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a flow" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="carts">
+                    <SelectItem value="POST/carts/{cart_id}">
                       {JSON.stringify("POST/carts/{cart_id}", null, 2)}
                     </SelectItem>
-
-                    <SelectItem value="product">
+                    <SelectItem value="POST/product/{product_id}">
                       {JSON.stringify("POST/product/{product_id}", null, 2)}
                     </SelectItem>
-
-                    <SelectItem value="order">
+                    <SelectItem value="POST/order/{order_id}">
                       {JSON.stringify("POST/order/{order_id}", null, 2)}
+                    </SelectItem>
+                    <SelectItem value="GET /user/{id}">
+                      {JSON.stringify("GET /user/{id}", null, 2)}
                     </SelectItem>
                   </SelectContent>
                 </Select>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -18,12 +19,6 @@ import React, { useEffect } from "react";
 
 const Tests = () => {
   const router = useRouter();
-  const { setHeaderTitle } = useHeader();
-  useEffect(() => {
-    // console.log('useEffect is running');
-    setHeaderTitle("Endpoints");
-  }, []);
-  
   const { data, error } = useQuery({
     queryKey: ["parse"],
     queryFn: () => axios.get("/api/parse").then((res) => res.data),
@@ -34,8 +29,7 @@ const Tests = () => {
   });
   const { data: EndpointsList, error: EndpointsListError } = useQuery<any>({
     queryKey: ["endpoints-list"],
-    queryFn: () =>
-      axios.get("/api/endpoints/blast/list").then((res) => res.data),
+    queryFn: () => axios.get("/api/endpoints/blast/list").then((res) => res.data),
   });
   const GoToBehaviour = (endpointIdentifier: any) => {
     router.push(`/behaviour/${endpointIdentifier}`);
@@ -45,6 +39,10 @@ const Tests = () => {
     router.push(`/flows?endpoint=${endpointIdentifier}`);
     setFilePath([endpointIdentifier]);
   };
+  const { setHeaderTitle } = useHeader();
+  useEffect(() => {
+    setHeaderTitle("Endpoints");
+  }, [setHeaderTitle]);
 
   return (
     <div className="flex flex-col text-start h-full w-full">

@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Bomb,
   CloudDownload,
   Home,
   LineChart,
@@ -29,6 +30,11 @@ export const MenuItems: {
     name: "flows",
     icon: <LineChart />,
     link: "/flows",
+  },
+  {
+    name: "blast radius",
+    icon: <Bomb />,
+    link: "/blast-radius",
   },
   {
     name: "Orders",

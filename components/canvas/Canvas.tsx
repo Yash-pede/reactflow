@@ -20,6 +20,7 @@ import {
 import NodeCard from "./node/NodeCard";
 import axios from "axios";
 import { useTheme } from "next-themes";
+import { useSearchParams } from "next/navigation";
 
 const nodeTypes = {
   selectorNode: NodeCard,
@@ -28,11 +29,21 @@ function Flow() {
   const { theme } = useTheme();
   const [nodes, setNodes, onNodesChange] = useNodesState(LoadinglNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(LoadingEdges);
-
-  const { data, error } = useQuery({
+  const searchParams = useSearchParams();
+  const { data, error, refetch } = useQuery({
     queryKey: ["graph"],
-    queryFn: () => axios.get("/api/graph").then((res) => res.data),
+    queryFn: () =>
+      axios
+        .get(
+          `/api/graph?endpoint=${decodeURIComponent(
+            searchParams.get("endpoint") || ""
+          )}`
+        )
+        .then((res) => res.data),
   });
+  useEffect(() => {
+    refetch();
+  }, [searchParams, refetch]);
 
   useEffect(() => {
     if (data) {
@@ -69,11 +80,7 @@ function Flow() {
             variant={BackgroundVariant.Lines}
           />
         ) : (
-          <Background
-          id="dark"
-          gap={20}
-          variant={BackgroundVariant.Dots}
-          />
+          <Background id="dark" gap={20} variant={BackgroundVariant.Dots} />
         )}
         <Controls />
         <MiniMap nodeBorderRadius={2} nodeStrokeWidth={3} />
