@@ -1,84 +1,134 @@
-import { useCallback, useEffect } from "react";
+import {
+  initialNodes,
+  initialEdges,
+  ProcessedNodes,
+  ProcessedEdges,
+} from "@/components/canvas/node";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import ELK from "elkjs/lib/elk.bundled.js";
+import React, { useCallback, useLayoutEffect } from "react";
 import ReactFlow, {
-  Controls,
-  Background,
-  BackgroundVariant,
   ReactFlowProvider,
-  MiniMap,
+  addEdge,
+  Panel,
   useNodesState,
   useEdgesState,
-  addEdge,
+  useReactFlow,
 } from "reactflow";
-import "reactflow/dist/style.css";
-import { useQuery } from "@tanstack/react-query";
-import {
-  LoadingEdges,
-  LoadinglNodes,
-  ProcessedEdges,
-  ProcessedNodes,
-} from "./node";
-import NodeCard from "./node/NodeCard";
-import axios from "axios";
-import { useTheme } from "next-themes";
 
-const nodeTypes = {
-  selectorNode: NodeCard,
+import "reactflow/dist/style.css";
+
+const elk = new ELK();
+
+// Elk has a *huge* amount of options to configure. To see everything you can
+// tweak check out:
+//
+// - https://www.eclipse.org/elk/reference/algorithms.html
+// - https://www.eclipse.org/elk/reference/options.html
+const elkOptions = {
+  "elk.algorithm": "layered",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "100",
+  "elk.spacing.nodeNode": "80",
 };
+
+const getLayoutedElements = (nodes, edges, options = {}) => {
+  const isHorizontal = options?.["elk.direction"] === "RIGHT";
+  const graph = {
+    id: "root",
+    layoutOptions: options,
+    children: nodes.map((node) => ({
+      ...node,
+      // Adjust the target and source handle positions based on the layout
+      // direction.
+      targetPosition: isHorizontal ? "left" : "top",
+      sourcePosition: isHorizontal ? "right" : "bottom",
+
+      // Hardcode a width and height for elk to use when layouting.
+      width: 150,
+      height: 50,
+    })),
+    edges: edges,
+  };
+
+  return elk
+    .layout(graph)
+    .then((layoutedGraph) => ({
+      nodes: layoutedGraph.children.map((node) => ({
+        ...node,
+        // React Flow expects a position property on the node instead of `x`
+        // and `y` fields.
+        position: { x: node.x, y: node.y },
+      })),
+
+      edges: layoutedGraph.edges,
+    }))
+    .catch(console.error);
+};
+
 function Flow() {
-  const { theme } = useTheme();
-  const [nodes, setNodes, onNodesChange] = useNodesState(LoadinglNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(LoadingEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const { data, error } = useQuery({
     queryKey: ["graph"],
-    queryFn: () => axios.get("/api/graph").then((res) => res.data),
+    queryFn: () =>
+      axios.get("/api/graph").then((res) => {
+        // console.log(res);
+        return res.data;
+      }),
   });
 
-  useEffect(() => {
-    if (data) {
-      setNodes(ProcessedNodes(data));
-      setEdges(ProcessedEdges(data));
-    }
-  }, [data, setEdges, setNodes]);
-
   const onConnect = useCallback(
-    (params: any) =>
-      setEdges((eds) =>
-        addEdge({ ...params, animated: true, style: { stroke: "#fff" } }, eds)
-      ),
+    (params) => setEdges((eds) => addEdge(params, eds)),
     []
   );
+  const onLayout = useCallback(
+    ({ direction, useInitialNodes = false }) => {
+      const opts = { "elk.direction": direction, ...elkOptions };
+      const ns = useInitialNodes ? initialNodes : nodes;
+      const es = useInitialNodes ? initialEdges : edges;
+  
+      getLayoutedElements(ns, es, opts).then(({ nodes: layoutedNodes, edges: layoutedEdges }) => {
+        if (!data) {
+          setNodes(layoutedNodes);
+          setEdges(layoutedEdges);
+        } else {
+          const processedNodes = ProcessedNodes(data);
+          const processedEdges = ProcessedEdges(data);
+          setNodes(processedNodes);
+          setEdges(processedEdges);
+        }
+      });
+    },
+    [nodes, edges, setNodes, setEdges, data]
+  );
+  
+
+  // Calculate the initial layout on mount.
+  useLayoutEffect(() => {
+    onLayout({ direction: "DOWN", useInitialNodes: true });
+  }, []);
+
   return (
-    <ReactFlowProvider>
-      <ReactFlow
-        nodes={nodes}
-        onNodesChange={onNodesChange}
-        edges={edges}
-        onEdgesChange={onEdgesChange}
-        fitView={true}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-        attributionPosition="bottom-left"
-        defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
-      >
-        {theme === "light" ? (
-          <Background
-            id="light"
-            gap={20}
-            color="#f1f1f1"
-            variant={BackgroundVariant.Lines}
-          />
-        ) : (
-          <Background
-          id="dark"
-          gap={20}
-          variant={BackgroundVariant.Dots}
-          />
-        )}
-        <Controls />
-        <MiniMap nodeBorderRadius={2} nodeStrokeWidth={3} />
-      </ReactFlow>
-    </ReactFlowProvider>
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onConnect={onConnect}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      fitView
+    >
+      <Panel position="top-right">
+        <button onClick={() => onLayout({ direction: "DOWN" })}>
+          vertical layout
+        </button>
+
+        <button onClick={() => onLayout({ direction: "RIGHT" })}>
+          horizontal layout
+        </button>
+      </Panel>
+    </ReactFlow>
   );
 }
 
