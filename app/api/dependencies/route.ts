@@ -56,15 +56,39 @@ export async function GET(request: Request) {
         },
       ],
     },
+    {
+      name: "user",
+      dependencies: [
+        {
+          name: "Express",
+          version: "4.17.1",
+          description:
+            "Fast, unopinionated, minimalist web framework for Node.js",
+        },
+        {
+          name: "MongoDB",
+          version: "4.4.9",
+          description: "NoSQL database",
+        },
+        {
+          name: "requests",
+          version: "2.26.0",
+          description: "Python HTTP library",
+        },
+        {
+          name: "httpx",
+          version: "0.19.0",
+          description: "HTTP client for Python",
+        },
+      ],
+    },
   ];
 
   const { searchParams } = new URL(request.url);
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
   return new Response(
-    JSON.stringify(
-      Dependency.find((d) => (d.name === searchParams.get("flow")))
-    ),
+    JSON.stringify(Dependency.find((d) => d.name === searchParams.get("flow"))),
     {
       status: 200,
     }

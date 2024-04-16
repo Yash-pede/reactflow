@@ -9,11 +9,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useFilePath } from "@/contexts/FilePathContext";
+import { useHeader } from "@/contexts/HeaderContext";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Key, MessageCircleWarning, Router } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 
 const Tests = () => {
   const router = useRouter();
@@ -32,16 +34,20 @@ const Tests = () => {
   const GoToBehaviour = (endpointIdentifier: any) => {
     router.push(`/behaviour/${endpointIdentifier}`);
   };
-  const TestPlanApin = () => {
-    axios.get("/api/test/plan");
+  const { setFilePath } = useFilePath();
+  const onConfigureBtnClick = (endpointIdentifier: any) => {
+    router.push(`/flows?endpoint=${endpointIdentifier.split("/")[1]}`);
+    setFilePath([endpointIdentifier]);
   };
-  
+  const { setHeaderTitle } = useHeader();
+  useEffect(() => {
+    setHeaderTitle("Endpoints");
+  }, [setHeaderTitle]);
+
   return (
     <div className="flex flex-col text-start h-full w-full">
       <div className="">
-        <h2 className="text-2xl font-semibold mb-4 text-start ">
-          Test Plan
-        </h2>
+        {/* <h2 className="text-2xl font-semibold mb-4 text-start ">EndPoint</h2> */}
         <div className="flex flex-col gap-4 w-full ">
           <p className="flex items-center justify-start gap-6">
             <MessageCircleWarning className="bg-orange-500 h-4 w-4 rounded-full p-[0.5px] text-white" />
@@ -83,7 +89,9 @@ const Tests = () => {
                         <Button
                           variant="outline"
                           className="border-orange-400 text-orange-400"
-                          onClick={() => router.push("/flows")}
+                          onClick={() =>
+                            onConfigureBtnClick(endpoint.entryPoint)
+                          }
                         >
                           Configure{" "}
                         </Button>

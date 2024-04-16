@@ -6,7 +6,12 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Terminal } from "lucide-react";
+import {
+  CircleArrowOutUpRight,
+  MessageCircleWarning,
+  SquareArrowOutUpRightIcon,
+  Terminal,
+} from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
@@ -38,16 +43,21 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { Separator } from "../ui/separator";
 
 export const CredentialsForm = () => {
+  const searchParams = useSearchParams();
   const form = useForm<z.infer<typeof DbMockFormSchema>>({
     resolver: zodResolver(DbMockFormSchema),
     defaultValues: {
       mock: false,
-      flow: "carts",
-      username: "",
-      password: "",
+      flow: "",
+      databaseUser: "",
+      databasePassword: "",
+      databaseHostname: "",
       dependency: [],
+      port: "",
     },
   });
 
@@ -79,7 +89,7 @@ export const CredentialsForm = () => {
 
   useEffect(() => {
     refetch();
-  }, [form.getValues("flow"),refetch]);
+  }, [form.getValues("flow"), refetch]);
 
   const onSubmit = (data: z.infer<typeof DbMockFormSchema>) => {
     toast.info("Creating Your Configuration");
@@ -87,7 +97,18 @@ export const CredentialsForm = () => {
     mutate(data);
     console.log(data);
   };
-
+  console.log(searchParams.get("endpoint"));
+  useEffect(() => {
+    if (searchParams.get("endpoint") != null) {
+      form.setValue(
+        "flow",
+        decodeURIComponent(searchParams.get("endpoint") || "") as string
+      );
+    } else {
+      form.setValue("flow", "carts");
+    }
+  }, [form, searchParams]);
+  console.log(form.getValues("flow"));
   return (
     <Form {...form}>
       <form
@@ -99,7 +120,7 @@ export const CredentialsForm = () => {
           <AlertTitle>Cart Campaign</AlertTitle>
           <AlertDescription className="space-y-3 mt-3">
             <div className="flex items-center space-x-2">
-              <Checkbox id="commits" checked />
+              <MessageCircleWarning className="w-4 h-4 rounded-full bg-orange-400" />
               <label
                 htmlFor="commits"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -108,7 +129,7 @@ export const CredentialsForm = () => {
               </label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox disabled id="entrypoints" />
+              <MessageCircleWarning className="w-4 h-4 rounded-full bg-orange-400" />
               <label
                 htmlFor="entrypoints"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -128,9 +149,6 @@ export const CredentialsForm = () => {
                   <h4 className="text-sm font-medium leading-none">
                     Selected Flow
                   </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Select the flow you want to perform the action on
-                  </p>
                 </div>
               </FormLabel>
               <FormControl>
@@ -142,7 +160,7 @@ export const CredentialsForm = () => {
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a flow" />
                   </SelectTrigger>
-                  <SelectContent defaultValue="carts">
+                  <SelectContent>
                     <SelectItem value="carts">
                       {JSON.stringify("POST/carts/{cart_id}", null, 2)}
                     </SelectItem>
@@ -165,7 +183,7 @@ export const CredentialsForm = () => {
           name="dependency"
           control={form.control}
           render={({ field }) => (
-            <FormItem className="w-full">
+            <FormItem className="w-full space-y-5">
               <FormLabel>
                 <div className="space-y-1 ">
                   <h4 className="text-sm font-medium leading-none">
@@ -179,7 +197,7 @@ export const CredentialsForm = () => {
               {Dependencies?.dependencies.map((item: Dependency, index) => (
                 <FormItem
                   key={item.name}
-                  className="flex flex-row items-start space-x-3 space-y-0"
+                  className="flex flex-row items-start space-x-3 space-y-0 "
                 >
                   <FormControl>
                     <Checkbox
@@ -192,7 +210,10 @@ export const CredentialsForm = () => {
                       }}
                     />
                   </FormControl>
-                  <FormLabel className="font-normal">{item.name}</FormLabel>
+                  <FormLabel className="font-normal flex items-center justify-between w-full">
+                    {item.name}
+                    <SquareArrowOutUpRightIcon className="h-4 w-4 cursor-pointer text-orange-500" />
+                  </FormLabel>
                 </FormItem>
               ))}
               <FormMessage />
@@ -233,63 +254,81 @@ export const CredentialsForm = () => {
                   />
                 </FormControl>
                 <FormLabel className="font-normal">
-                 I don&apos;t want to mock the database
+                  I don&apos;t want to mock the database
                 </FormLabel>
               </FormItem>
             </FormItem>
           )}
         />
-        <Card className="w-full">
+        <Card className="w-full border-none">
           <CardHeader>
-            <CardTitle className="text-2xl">Login</CardTitle>
-            <CardDescription>
-              These credentials will be used to login.
-            </CardDescription>
+            <CardTitle className="text-2xl">Database Configurations</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
             <FormField
               control={form.control}
-              name="username"
+              name="databaseUser"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Database User</FormLabel>
                   <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    <Input {...field} />
                   </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="password"
+              name="databasePassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Database Password</FormLabel>
                   <FormControl>
                     <Input id="password" type="password" required {...field} />
                   </FormControl>
-                  <FormDescription>
-                    This password is used to login.
-                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="databaseHostname"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Database Hostname</FormLabel>
+                  <FormControl>
+                    <Input required {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="port"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Database Port</FormLabel>
+                  <FormControl>
+                    <Input required {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </CardContent>
-          <CardFooter>
-            <Button
-              disabled={isLoading || isMutating}
-              className="w-full"
-              type="submit"
-            >
-              Create Configuration
-            </Button>
-          </CardFooter>
         </Card>
+        <div className="flex flex-col gap-3 w-full">
+          <Separator />
+          <Button
+            disabled={isLoading || isMutating}
+            className="w-1/5 ml-auto"
+            type="submit"
+          >
+            Save
+          </Button>
+        </div>
       </form>
     </Form>
   );

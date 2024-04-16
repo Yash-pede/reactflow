@@ -18,9 +18,11 @@ import Link from "next/link";
 import { Badge } from "../../ui/badge";
 import ThemeSwitcher from "../ThemeSwitcher";
 import { useRouter } from "next/navigation";
+import { useHeader } from "@/contexts/HeaderContext";
 
 const Navbar = () => {
   // const path = usePathname().split("/");
+  const { headerTitle } = useHeader();
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
       <Sheet>
@@ -81,6 +83,9 @@ const Navbar = () => {
         </SheetContent>
       </Sheet>
       <div className="w-full flex-1">
+        {headerTitle && (
+          <h1 className="text-2xl font-semibold">{headerTitle}</h1>
+        )}
         {/* <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -96,7 +101,6 @@ const Navbar = () => {
         </Breadcrumb> */}
       </div>
       <ThemeSwitcher />
-
     </header>
   );
 };

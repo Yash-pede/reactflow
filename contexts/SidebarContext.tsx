@@ -1,9 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState } from "react";
 
-// Assuming you intended to import something, but it's unclear, please specify.
-// Correct the import statement according to your requirement.
-
 const SidebarContext = createContext({
   isSidebarOpen: false,
   showSidebar: () => {},
