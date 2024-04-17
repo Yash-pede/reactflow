@@ -302,52 +302,74 @@ const responseWithIncreasedComplexity: MockGraphData = {
           dependent_libs: ["sqlalchemy"],
           children: [
             {
-              function: "cart_crud.update_inventory",
+              function: "cart_asdascrud.updaasdaste_inventory",
               params: ["product_id", "quantity"],
               response_object: "None",
               dependent_libs: ["sqlalchemy"],
-              children: [
-                {
-                  function: "inventory_management.check_inventory",
-                  params: ["product_id", "quantity"],
-                  response_object: "InventoryStatus",
-                  dependent_libs: ["sqlalchemy"],
-                  children: [
-                    {
-                      function: "notification_service.notify_user",
-                      params: ["user_id", "message"],
-                      response_object: "Notification",
-                      dependent_libs: ["sqlalchemy"],
-                      children: [],
-                    },
-                  ],
-                },
-              ],
+              children: [],
+              //       {
+              //         function: "inventory_management.check_inventory",
+              //         params: ["product_id", "quantity"],
+              //         response_object: "InventoryStatus",
+              //         dependent_libs: ["sqlalchemy"],
+              //         children: [
+              //           {
+              //             function: "notification_service.notify_user",
+              //             params: ["user_id", "message"],
+              //             response_object: "Notification",
+              //             dependent_libs: ["sqlalchemy"],
+              //             children: [],
+              //           },
+              //         ],
+              //       },
+              //     ],
             },
             {
-              function: "cart_service.apply_discounts",
-              params: ["cart_id", "discounts"],
-              response_object: "CartItem",
+              function: "cart_asdascrud.updaasdasdte_inventory",
+              params: ["product_id", "quantity"],
+              response_object: "None",
               dependent_libs: ["sqlalchemy"],
-              children: [
-                {
-                  function: "product_discounts.calculate_discount",
-                  params: ["product_id", "user_id"],
-                  response_object: "DiscountDetails",
-                  dependent_libs: ["sqlalchemy"],
-                  children: [
-                    {
-                      function: "user_preferences.get_user_preferences",
-                      params: ["user_id"],
-                      response_object: "UserPreferences",
-                      dependent_libs: ["sqlalchemy"],
-                      children: [],
-                    },
-                  ],
-                },
-              ],
+              children: [],
+            },
+            {
+              function: "cart_cadsarud.update_iasdasnventory",
+              params: ["product_id", "quantity"],
+              response_object: "None",
+              dependent_libs: ["sqlalchemy"],
+              children: [],
+            },
+            {
+              function: "cart_cruasdasd.updatasdase_inventory",
+              params: ["product_id", "quantity"],
+              response_object: "None",
+              dependent_libs: ["sqlalchemy"],
+              children: [],
             },
           ],
+          //   {
+          //     function: "cart_service.apply_discounts",
+          //     params: ["cart_id", "discounts"],
+          //     response_object: "CartItem",
+          //     dependent_libs: ["sqlalchemy"],
+          //     children: [
+          //       {
+          //         function: "product_discounts.calculate_discount",
+          //         params: ["product_id", "user_id"],
+          //         response_object: "DiscountDetails",
+          //         dependent_libs: ["sqlalchemy"],
+          //         children: [
+          //           {
+          //             function: "user_preferences.get_user_preferences",
+          //             params: ["user_id"],
+          //             response_object: "UserPreferences",
+          //             dependent_libs: ["sqlalchemy"],
+          //             children: [],
+          //           },
+          //         ],
+          //       },
+          //     ],
+          //   },
+          // ],
         },
         {
           function: "product_client.add_freebie_if_applicable",
@@ -356,27 +378,45 @@ const responseWithIncreasedComplexity: MockGraphData = {
           dependent_libs: ["sqlalchemy"],
           children: [
             {
-              function: "cart_service.add_freebie_if_applicable",
+              function: "cart_seasdasrvice.add_freebie_asdaif_applicable",
               params: ["cart_id", "product_id", "db"],
               response_object: "None",
               dependent_libs: ["sqlalchemy"],
               children: [
-                {
-                  function: "cart_crud.get_freebie_mapping",
-                  params: ["product_id", "db"],
-                  response_object: "FreebieMapping",
-                  dependent_libs: ["sqlalchemy"],
-                  children: [
-                    {
-                      function: "product_discounts.calculate_discount",
-                      params: ["product_id", "user_id"],
-                      response_object: "DiscountDetails",
-                      dependent_libs: ["sqlalchemy"],
-                      children: [],
-                    },
-                  ],
-                },
+                // {
+                //   function: "cart_crud.get_freebie_mapping",
+                //   params: ["product_id", "db"],
+                //   response_object: "FreebieMapping",
+                //   dependent_libs: ["sqlalchemy"],
+                //   children: [
+                //     {
+                //       function: "product_discounts.calculate_discount",
+                //       params: ["product_id", "user_id"],
+                //       response_object: "DiscountDetails",
+                //       dependent_libs: ["sqlalchemy"],
+                //       children: [],
+                //     },
+                //   ],
+                // },
               ],
+            },
+            {
+              function: "cart_seasdasdfrvice.add_freebie_if_asdfsapplicable",
+              params: ["cart_id", "product_id", "db"],
+              response_object: "None",
+              dependent_libs: ["sqlalchemy"],              
+            },
+            {
+              function: "cart_sasdsaervice.add_fsadsreebie_if_applicable",
+              params: ["cart_id", "product_id", "db"],
+              response_object: "None",
+              dependent_libs: ["sqlalchemy"],              
+            },
+            {
+              function: "cart_asdasdaservice.add_freebie_if_applicasdsdfreable",
+              params: ["cart_id", "product_id", "db"],
+              response_object: "None",
+              dependent_libs: ["sqlalchemy"],              
             },
           ],
         },
@@ -570,28 +610,28 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const endpoint = searchParams.get("endpoint");
   // console.log("endpoint", endpoint?.split("/")[1].trim());
-  let responseData;
+  // let responseData;
 
-  switch (endpoint?.split("/")[1].trim()) {
-    case "user":
-      responseData = usersMockData;
-      break;
+  // switch (endpoint?.split("/")[1].trim()) {
+  //   case "user":
+  //     responseData = usersMockData;
+  //     break;
 
-    case "product":
-      responseData = productsMockData;
-      break;
+  //   case "product":
+  //     responseData = productsMockData;
+  //     break;
 
-    case "order":
-      responseData = ordersMockData;
-      break;
+  //   case "order":
+  //     responseData = ordersMockData;
+  //     break;
 
-    default:
-      responseData = responseWithIncreasedComplexity;
-      break;
-  }
+  //   default:
+  //     responseData = responseWithIncreasedComplexity;
+  //     break;
+  // }
 
   await new Promise((resolve) => setTimeout(resolve, 0));
-  return new Response(JSON.stringify(responseData), {
+  return new Response(JSON.stringify(responseWithIncreasedComplexity), {
     status: 200,
   });
 }

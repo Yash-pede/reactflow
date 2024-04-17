@@ -59,6 +59,7 @@ function Flow() {
       ),
     []
   );
+  console.log(nodes);
   return (
     <ReactFlowProvider>
       <ReactFlow
